@@ -1,0 +1,18 @@
+<div>
+    <h1>Products</h1>
+    <ul>
+      <li *ngFor="let product of products">
+        {{ product.name }} - {{ product.price }}$
+        <button (click)="deleteProduct(product.id)">Delete</button>
+      </li>
+    </ul>
+  
+    <h2>Add Product</h2>
+    <form (ngSubmit)="addProduct()">
+      <input [(ngModel)]="product.name" name="name" placeholder="Name" required>
+      <input [(ngModel)]="product.description" name="description" placeholder="Description" required>
+      <input [(ngModel)]="product.price" name="price" placeholder="Price" required type="number">
+      <button type="submit">Add</button>
+    </form>
+  </div>
+  

@@ -19,6 +19,15 @@ builder.Services.AddSingleton<IMongoDBSettings>(sp =>
     (IMongoDBSettings)sp.GetRequiredService<IOptions<MongoDBSettings>>().Value);
 
 builder.Services.AddSingleton<ProductService>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Cors", p =>
+    {
+        p.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -28,7 +37,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors("Cors");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
