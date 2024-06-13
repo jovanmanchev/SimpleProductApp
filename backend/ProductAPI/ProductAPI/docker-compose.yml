@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  productapi:
+    image: productapi:latest
+    container_name: productapi
+    ports:
+      - "5021:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - MONGO_CONNECTION_STRING=mongodb://mongo:27017
+    depends_on:
+      - mongo
+
+  product-front:
+    image: product-front:latest
+    container_name: product-front
+    ports:
+      - "4200:80"
+    depends_on:
+      - productapi
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
