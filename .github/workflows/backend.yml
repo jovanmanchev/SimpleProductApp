@@ -21,7 +21,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        cd backend/ProductAPI
+        cd backend/ProductAPI/ProductAPI
         docker build -t jovan141/productapi:latest -f Dockerfile .
 
     - name: Push Docker image
