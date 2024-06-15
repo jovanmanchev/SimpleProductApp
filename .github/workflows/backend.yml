@@ -19,8 +19,11 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Docker image
+    - name: Build Docker image
       run: |
         cd backend/ProductAPI
-        docker build -t jovan141/productapi:latest .
+        docker build -t jovan141/productapi:latest -f Dockerfile .
+
+    - name: Push Docker image
+      run: |
         docker push jovan141/productapi:latest
