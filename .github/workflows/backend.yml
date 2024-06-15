@@ -3,7 +3,7 @@ name: Backend Docker Build and Push
 on:
   push:
     paths:
-      - 'backend/ProductAPI/**' 
+      - 'backend/**' 
 
 jobs:
   build:
