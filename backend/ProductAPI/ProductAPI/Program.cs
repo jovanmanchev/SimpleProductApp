@@ -11,6 +11,20 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Host.ConfigureAppConfiguration((context, config) =>
+{
+    var env = context.HostingEnvironment;
+
+   
+    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+ 
+    if (env.IsProduction() || IsRunningInKubernetes())
+    {
+       
+        config.AddJsonFile("/app/config/appsettings.Production.json", optional: true, reloadOnChange: true);
+    }
+});
 
 builder.Services.Configure<MongoDBSettings>(
     builder.Configuration.GetSection(nameof(MongoDBSettings)));
@@ -19,6 +33,7 @@ builder.Services.AddSingleton<IMongoDBSettings>(sp =>
     (IMongoDBSettings)sp.GetRequiredService<IOptions<MongoDBSettings>>().Value);
 
 builder.Services.AddSingleton<ProductService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Cors", p =>
@@ -45,3 +60,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+bool IsRunningInKubernetes()
+{
+    
+    return Environment.GetEnvironmentVariable("KUBERNETES_SERVICE_HOST") != null;
+}
