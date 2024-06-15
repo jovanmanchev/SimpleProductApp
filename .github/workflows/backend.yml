@@ -2,8 +2,10 @@ name: Backend Docker Build and Push
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'backend/**' 
+      - 'backend/ProductAPI/**' 
 
 jobs:
   build:
