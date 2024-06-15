@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private apiUrl = 'http://localhost:5021/api/products';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
@@ -19,7 +19,7 @@ export class ProductService {
   }
 
   createProduct(product: Product): Observable<Product> {
-    console.log(product)
+    console.log(this.apiUrl)
     product.id = "";
     return this.http.post<Product>(this.apiUrl, product);
   }
