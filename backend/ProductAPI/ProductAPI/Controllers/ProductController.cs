@@ -22,6 +22,7 @@ namespace ProductAPI.Controllers
         public ActionResult<Product> Get(string id)
         {
             var product = _productService.Get(id);
+
             if (product == null)
             {
                 return NotFound();
