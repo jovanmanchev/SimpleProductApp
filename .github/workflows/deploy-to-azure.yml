@@ -1,0 +1,31 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches:
+      - main  
+  workflow_dispatch:  # Allow manual triggering for testing
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Upload Docker Compose file to Azure Web App
+      run: |
+        az webapp config container set --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+          --resource-group ${{ secrets.AZURE_RG }} \
+          --multicontainer-config-type compose \
+          --multicontainer-config-file backend/ProductAPI/ProductAPI/docker-compose.yml
+
+    - name: Restart Azure App Service
+      run: |
+        az webapp restart --name ${{ secrets.AZURE_WEBAPP_NAME }} --resource-group ${{ secrets.AZURE_RG }}
