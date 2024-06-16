@@ -36,14 +36,13 @@ jobs:
         docker tag jovan141/product-front:latest ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/product-front:latest
         docker tag mongo:latest ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/mongo:latest
 
-    - name: Push images to ACR
+    - name: Update Docker Compose file
       run: |
-        docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/productapi:latest
-        docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/product-front:latest
-        docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/mongo:latest
+        cd backend/ProductAPI/ProductAPI
+        sed -i 's|jovan141/productapi:latest|${{ secrets.AZURE_ACR_NAME }}.azurecr.io/productapi:latest|g' docker-compose.yml
+        sed -i 's|jovan141/product-front:latest|${{ secrets.AZURE_ACR_NAME }}.azurecr.io/product-front:latest|g' docker-compose.yml
 
     - name: Deploy with Docker Compose
       run: |
-        sed -i 's|jovan141/productapi:latest|${{ secrets.AZURE_ACR_NAME }}.azurecr.io/productapi:latest|g' docker-compose.yml
-        sed -i 's|jovan141/product-front:latest|${{ secrets.AZURE_ACR_NAME }}.azurecr.io/product-front:latest|g' docker-compose.yml
+        cd backend/ProductAPI/ProductAPI
         docker-compose -f docker-compose.yml up -d
