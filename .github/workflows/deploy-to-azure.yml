@@ -1,13 +1,15 @@
-name: Deploy to Azure Container Registry
+name: Deploy to Azure App Service
 
 on:
   push:
     branches:
-      - main  
+      - main  # Adjust to your main branch
     paths:
+      - 'backend/ProductAPI/**'
+      - 'frontend/ProductFront/**'
       - 'docker-compose.yml'
       - '.github/workflows/deploy-to-azure.yml'
-  workflow_dispatch:
+  workflow_dispatch:  # Allow manual triggering for testing
 
 jobs:
   deploy:
@@ -17,32 +19,38 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Log in to Azure Container Registry
-      uses: azure/docker-login@v1
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
       with:
-        login-server: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-        username: ${{ secrets.AZURE_ACR_USERNAME }}
-        password: ${{ secrets.AZURE_ACR_PASSWORD }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    - name: Pull images from DockerHub
+    - name: Build and push Docker images
       run: |
-        docker pull jovan141/productapi:latest
-        docker pull jovan141/product-front:latest
-        docker pull mongo:latest
+        docker build -t ${DOCKERHUB_USERNAME}/productapi:latest -f backend/ProductAPI/Dockerfile ./backend/ProductAPI
+        docker build -t ${DOCKERHUB_USERNAME}/product-front:latest -f frontend/ProductFront/Dockerfile ./frontend/ProductFront
+        docker push ${DOCKERHUB_USERNAME}/productapi:latest
+        docker push ${DOCKERHUB_USERNAME}/product-front:latest
 
-    - name: Tag images for ACR
-      run: |
-        docker tag jovan141/productapi:latest ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/productapi:latest
-        docker tag jovan141/product-front:latest ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/product-front:latest
-        docker tag mongo:latest ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/mongo:latest
-
-    - name: Update Docker Compose file
+    - name: Update Docker Compose file with image names
       run: |
         cd backend/ProductAPI/ProductAPI
-        sed -i 's|jovan141/productapi:latest|${{ secrets.AZURE_ACR_NAME }}.azurecr.io/productapi:latest|g' docker-compose.yml
-        sed -i 's|jovan141/product-front:latest|${{ secrets.AZURE_ACR_NAME }}.azurecr.io/product-front:latest|g' docker-compose.yml
+        sed -i 's|productapi:latest|${DOCKERHUB_USERNAME}/productapi:latest|g' docker-compose.yml
+        sed -i 's|product-front:latest|${DOCKERHUB_USERNAME}/product-front:latest|g' docker-compose.yml
 
-    - name: Deploy with Docker Compose
+    - name: Set up Azure CLI
+      uses: azure/cli-action@v1
+      with:
+        inlineScript: |
+          echo "Setting up Azure CLI..."
+          az login --service-principal -u ${{ secrets.AZURE_SP_APP_ID }} -p ${{ secrets.AZURE_SP_PASSWORD }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+
+    - name: Deploy to Azure App Service
       run: |
-        cd backend/ProductAPI/ProductAPI
-        docker-compose -f docker-compose.yml up -d
+        echo "Deploying to Azure App Service..."
+        az webapp config container set --name ${{ secrets.AZURE_WEBAPP_NAME }} --resource-group ${{ secrets.AZURE_RG }} --multicontainer-config-type compose --multicontainer-config-file backend/ProductAPI/ProductAPI/docker-compose.yml
+
+    - name: Restart Azure App Service
+      run: |
+        echo "Restarting Azure App Service..."
+        az webapp restart --name ${{ secrets.AZURE_WEBAPP_NAME }} --resource-group ${{ secrets.AZURE_RG }}
