@@ -5,7 +5,7 @@ services:
     image: jovan141/productapi:latest
     container_name: productapi
     ports:
-      - "5021:80"
+      - "80:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - MONGO_CONNECTION_STRING=mongodb://mongo:27017
