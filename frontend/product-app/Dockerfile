@@ -6,4 +6,6 @@ RUN npm install
 COPY . .
 RUN npm run build --prod
 
-CMD ["npm", "start"]
+FROM nginx:alpine
+COPY --from=build /app/dist/product-app /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
