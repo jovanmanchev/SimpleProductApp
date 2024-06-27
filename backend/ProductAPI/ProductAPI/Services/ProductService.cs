@@ -17,6 +17,7 @@ namespace ProductAPI.Services
             _products = mongoDatabase.GetCollection<Product>("Products");
         }
 
+
         public List<Product> Get() => _products.Find(product => true).ToList();
         public Product Get(string id) => _products.Find<Product>(product => product.Id == id).FirstOrDefault();
         public Product Create(Product product) { _products.InsertOne(product); return product; }
